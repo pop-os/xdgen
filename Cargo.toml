@@ -9,4 +9,4 @@ license = "GPL-3.0-only"
 fluent = "0.17"
 freedesktop_entry_parser = "2"
 unic-langid = "0.9"
-xmltree = "0.12"
+xmltree = { version = "0.12", features = ["attribute-order"] }
