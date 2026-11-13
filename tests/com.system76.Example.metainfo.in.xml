@@ -11,10 +11,18 @@
   <name>COSMIC Example</name>
   <summary>Example COSMIC desktop app</summary>
   <description>
-    <p>Example app for the COSMIC desktop</p>
-    <p xml:lang="es">Ejemplo de aplicación COSMIC</p>
-    <p xml:lang="fr">Exemple d'application COSMIC</p>
+    <p xdgen-translate="description">Example app for the COSMIC desktop</p>
   </description>
+  <releases>
+    <release version="26.09" date="2026-09-27">
+      <description>
+        <ul>
+          <li xdgen-translate="release-note-1">Note 1</li>
+          <li xdgen-translate="release-note-2">Note 2</li>
+        </ul>
+      </description>
+    </release>
+  </releases>
   <keywords>
     <keyword>Example</keyword>
     <keyword>Test</keyword>

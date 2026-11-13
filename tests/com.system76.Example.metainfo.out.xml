@@ -18,9 +18,26 @@
   <summary xml:lang="fr">Exemple d'application COSMIC</summary>
   <description>
     <p>Example app for the COSMIC desktop</p>
-    <p xml:lang="es">Ejemplo de aplicación COSMIC</p>
     <p xml:lang="fr">Exemple d'application COSMIC</p>
+    <p xml:lang="es">Ejemplo de aplicación COSMIC</p>
+    <p xml:lang="en">Example app for the COSMIC desktop</p>
   </description>
+  <releases>
+    <release version="26.09" date="2026-09-27">
+      <description>
+        <ul>
+          <li>Note 1</li>
+          <li xml:lang="fr">Note 1</li>
+          <li xml:lang="es">Nota 1</li>
+          <li xml:lang="en">Note 1</li>
+          <li>Note 2</li>
+          <li xml:lang="fr">Note 2</li>
+          <li xml:lang="es">Nota 2</li>
+          <li xml:lang="en">Note 2</li>
+        </ul>
+      </description>
+    </release>
+  </releases>
   <keywords>
     <keyword>Example</keyword>
     <keyword>Test</keyword>

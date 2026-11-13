@@ -1,6 +1,7 @@
 use fluent::{FluentBundle, FluentResource};
 use std::{collections::BTreeMap, error::Error, fmt::Write, fs, path::Path};
 use unic_langid::LanguageIdentifier;
+use xmltree::{Element, XMLNode};
 
 pub struct Context {
     lang_bundles: BTreeMap<LanguageIdentifier, FluentBundle<FluentResource>>,
@@ -68,9 +69,9 @@ impl Context {
 }
 
 #[derive(Clone, Debug)]
-pub struct FluentString(pub &'static str);
+pub struct FluentString<'a>(pub &'a str);
 
-impl FluentString {
+impl<'a> FluentString<'a> {
     pub fn get(&self, ctx: &Context) -> BTreeMap<LanguageIdentifier, String> {
         let mut results = BTreeMap::new();
         for (lang, bundle) in ctx.lang_bundles.iter() {
@@ -99,13 +100,13 @@ impl FluentString {
 
 #[derive(Clone, Debug)]
 pub struct App {
-    name: FluentString,
-    comment: Option<FluentString>,
-    keywords: Option<FluentString>,
+    name: FluentString<'static>,
+    comment: Option<FluentString<'static>>,
+    keywords: Option<FluentString<'static>>,
 }
 
 impl App {
-    pub fn new(name: FluentString) -> Self {
+    pub fn new(name: FluentString<'static>) -> Self {
         Self {
             name,
             comment: None,
@@ -113,12 +114,12 @@ impl App {
         }
     }
 
-    pub fn comment(mut self, value: FluentString) -> Self {
+    pub fn comment(mut self, value: FluentString<'static>) -> Self {
         self.comment = Some(value);
         self
     }
 
-    pub fn keywords(mut self, value: FluentString) -> Self {
+    pub fn keywords(mut self, value: FluentString<'static>) -> Self {
         self.keywords = Some(value);
         self
     }
@@ -185,8 +186,6 @@ impl App {
         template_path: impl AsRef<Path>,
         ctx: &Context,
     ) -> Result<String, Box<dyn Error>> {
-        use xmltree::{Element, XMLNode};
-
         let template_path = template_path.as_ref();
         let template = fs::File::open(template_path)?;
 
@@ -264,6 +263,8 @@ impl App {
             }
         }
 
+        expand_all(&mut element, &ctx)?;
+
         let mut data = Vec::new();
         element.write_with_config(
             &mut data,
@@ -275,4 +276,38 @@ impl App {
         s = s.replace(" lang=", " xml:lang=");
         Ok(s)
     }
+}
+
+fn expand_all(element: &mut Element, ctx: &Context) -> Result<(), Box<dyn Error>> {
+    let mut to_insert = Vec::new();
+    for (index, child) in element.children.iter_mut().enumerate() {
+        if let Some(element) = child.as_mut_element() {
+            expand_all(element, ctx)?;
+            let Some(xdg_value) = element.attributes.get("xdgen-translate") else {
+                continue;
+            };
+
+            let fluent = FluentString(&xdg_value);
+
+            let mut to_insert_for_child = Vec::new();
+            for (lang, value) in fluent.get(ctx) {
+                let mut child = Element::new(&element.name);
+                child
+                    .attributes
+                    .insert("lang".to_string(), lang.to_string().replace("-", "_"));
+                child.children.push(XMLNode::Text(value));
+                to_insert_for_child.push(XMLNode::Element(child));
+            }
+            to_insert.push((index + 1, to_insert_for_child));
+            element.attributes.remove("xdgen-translate");
+        }
+    }
+
+    for (index, to_insert_for_child) in to_insert.into_iter().rev() {
+        for child in to_insert_for_child.into_iter() {
+            element.children.insert(index, child);
+        }
+    }
+
+    Ok(())
 }
