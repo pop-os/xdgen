@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=COSMIC Example
+Comment=Example COSMIC desktop app
+Exec=cosmic-example
+Terminal=false
+Type=Application
+StartupNotify=true
+Icon=com.system76.CosmicExample
+Categories=COSMIC;System;TerminalEmulator;
+Keywords=Example;Test
+
