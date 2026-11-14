@@ -32,7 +32,7 @@ impl Context {
             let lang: LanguageIdentifier = name.parse()?;
             let path = entry
                 .path()
-                .join(&format!("{}.ftl", domain.as_ref().replace("-", "_")));
+                .join(format!("{}.ftl", domain.as_ref().replace("-", "_")));
             lang_files.insert(lang, path);
         }
 
@@ -88,7 +88,7 @@ impl<'a> FluentString<'a> {
             };
             let Some(pat) = msg.value() else { continue };
             let mut errs = Vec::new();
-            let result = bundle.format_pattern(&pat, None, &mut errs);
+            let result = bundle.format_pattern(pat, None, &mut errs);
             if !errs.is_empty() {
                 eprintln!(
                     "{} errors when formatting {} for lang {}:",
@@ -224,8 +224,8 @@ impl App {
          -> Result<(), Box<dyn Error>> {
             let mut index_opt = None;
             for (index, child) in element.children.iter().enumerate() {
-                if let Some(element) = child.as_element() {
-                    if element.name == tag {
+                if let Some(element) = child.as_element()
+                    && element.name == tag {
                         if !element.attributes.is_empty() {
                             return Err(format!(
                                 "template {} has localized tag {}",
@@ -244,7 +244,6 @@ impl App {
                         }
                         index_opt = Some(index);
                     }
-                }
             }
 
             let Some(mut index) = index_opt else {
@@ -290,7 +289,7 @@ impl App {
             }
         }
 
-        expand_all(&mut element, &ctx)?;
+        expand_all(&mut element, ctx)?;
 
         let mut data = Vec::new();
         element.write_with_config(
@@ -314,7 +313,7 @@ fn expand_all(element: &mut Element, ctx: &Context) -> Result<(), Box<dyn Error>
                 continue;
             };
 
-            let fluent = FluentString(&xdg_value);
+            let fluent = FluentString(xdg_value);
 
             let mut to_insert_for_child = Vec::new();
             for (lang, value) in fluent.get(ctx) {
