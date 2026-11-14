@@ -1,13 +1,19 @@
+#![doc = include_str!("../README.md")]
+
 use fluent::{FluentBundle, FluentResource};
 use std::{collections::BTreeMap, error::Error, fmt::Write, fs, path::Path};
 use unic_langid::LanguageIdentifier;
 use xmltree::{Element, XMLNode};
 
+/// Fluent context, containing the translations.
 pub struct Context {
     lang_bundles: BTreeMap<LanguageIdentifier, FluentBundle<FluentResource>>,
 }
 
 impl Context {
+    /// Create a context.
+    ///
+    /// Will load files: `<i18_dir>/<lang-id>/<domain>.ftl`.
     pub fn new(
         i18n_dir: impl AsRef<Path>,
         domain: impl AsRef<str>,
@@ -68,10 +74,12 @@ impl Context {
     }
 }
 
+/// The identifier of a fluent message.
 #[derive(Clone, Debug)]
 pub struct FluentString<'a>(pub &'a str);
 
 impl<'a> FluentString<'a> {
+    /// Obtain all the translations for this identifier.
     pub fn get(&self, ctx: &Context) -> BTreeMap<LanguageIdentifier, String> {
         let mut results = BTreeMap::new();
         for (lang, bundle) in ctx.lang_bundles.iter() {
@@ -98,6 +106,7 @@ impl<'a> FluentString<'a> {
     }
 }
 
+/// An application metadata.
 #[derive(Clone, Debug)]
 pub struct App {
     name: FluentString<'static>,
@@ -106,6 +115,9 @@ pub struct App {
 }
 
 impl App {
+    /// Create an application.
+    ///
+    /// `name` will be used to look up the name in the fluent resources.
     pub fn new(name: FluentString<'static>) -> Self {
         Self {
             name,
@@ -114,16 +126,24 @@ impl App {
         }
     }
 
+    /// Set the "Comment" field of XDG desktop entries and the Summary field of metainfo files.
     pub fn comment(mut self, value: FluentString<'static>) -> Self {
         self.comment = Some(value);
         self
     }
 
+    /// Set the keywords for the application.
+    ///
+    /// They must not contain spaces, and be separated by semicolons.
     pub fn keywords(mut self, value: FluentString<'static>) -> Self {
         self.keywords = Some(value);
         self
     }
 
+    /// Generate a desktop entry file.
+    ///
+    /// Load the template desktop entry file from `template_path`, and
+    /// generates an internationalized version.
     pub fn expand_desktop(
         &self,
         template_path: impl AsRef<Path>,
@@ -181,6 +201,13 @@ impl App {
         Ok(s)
     }
 
+    /// Generate an appstream metainfo file.
+    ///
+    /// Load the template metainfo file from `template_path`, and
+    /// generates an internationalized version.
+    ///
+    /// This will also translate any element where the `xdgen-translate` attribute
+    /// contains fluent translation key.
     pub fn expand_metainfo(
         &self,
         template_path: impl AsRef<Path>,
