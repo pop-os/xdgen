@@ -1,12 +1,19 @@
+#![doc = include_str!("../README.md")]
+
 use fluent::{FluentBundle, FluentResource};
 use std::{collections::BTreeMap, error::Error, fmt::Write, fs, path::Path};
 use unic_langid::LanguageIdentifier;
+use xmltree::{Element, XMLNode};
 
+/// Fluent context, containing the translations.
 pub struct Context {
     lang_bundles: BTreeMap<LanguageIdentifier, FluentBundle<FluentResource>>,
 }
 
 impl Context {
+    /// Create a context.
+    ///
+    /// Will load files: `<i18_dir>/<lang-id>/<domain>.ftl`.
     pub fn new(
         i18n_dir: impl AsRef<Path>,
         domain: impl AsRef<str>,
@@ -25,7 +32,7 @@ impl Context {
             let lang: LanguageIdentifier = name.parse()?;
             let path = entry
                 .path()
-                .join(&format!("{}.ftl", domain.as_ref().replace("-", "_")));
+                .join(format!("{}.ftl", domain.as_ref().replace("-", "_")));
             lang_files.insert(lang, path);
         }
 
@@ -67,10 +74,12 @@ impl Context {
     }
 }
 
+/// The identifier of a fluent message.
 #[derive(Clone, Debug)]
-pub struct FluentString(pub &'static str);
+pub struct FluentString<'a>(pub &'a str);
 
-impl FluentString {
+impl<'a> FluentString<'a> {
+    /// Obtain all the translations for this identifier.
     pub fn get(&self, ctx: &Context) -> BTreeMap<LanguageIdentifier, String> {
         let mut results = BTreeMap::new();
         for (lang, bundle) in ctx.lang_bundles.iter() {
@@ -79,7 +88,7 @@ impl FluentString {
             };
             let Some(pat) = msg.value() else { continue };
             let mut errs = Vec::new();
-            let result = bundle.format_pattern(&pat, None, &mut errs);
+            let result = bundle.format_pattern(pat, None, &mut errs);
             if !errs.is_empty() {
                 eprintln!(
                     "{} errors when formatting {} for lang {}:",
@@ -97,15 +106,19 @@ impl FluentString {
     }
 }
 
+/// An application metadata.
 #[derive(Clone, Debug)]
 pub struct App {
-    name: FluentString,
-    comment: Option<FluentString>,
-    keywords: Option<FluentString>,
+    name: FluentString<'static>,
+    comment: Option<FluentString<'static>>,
+    keywords: Option<FluentString<'static>>,
 }
 
 impl App {
-    pub fn new(name: FluentString) -> Self {
+    /// Create an application.
+    ///
+    /// `name` will be used to look up the name in the fluent resources.
+    pub fn new(name: FluentString<'static>) -> Self {
         Self {
             name,
             comment: None,
@@ -113,16 +126,24 @@ impl App {
         }
     }
 
-    pub fn comment(mut self, value: FluentString) -> Self {
+    /// Set the "Comment" field of XDG desktop entries and the Summary field of metainfo files.
+    pub fn comment(mut self, value: FluentString<'static>) -> Self {
         self.comment = Some(value);
         self
     }
 
-    pub fn keywords(mut self, value: FluentString) -> Self {
+    /// Set the keywords for the application.
+    ///
+    /// They must not contain spaces, and be separated by semicolons.
+    pub fn keywords(mut self, value: FluentString<'static>) -> Self {
         self.keywords = Some(value);
         self
     }
 
+    /// Generate a desktop entry file.
+    ///
+    /// Load the template desktop entry file from `template_path`, and
+    /// generates an internationalized version.
     pub fn expand_desktop(
         &self,
         template_path: impl AsRef<Path>,
@@ -180,13 +201,18 @@ impl App {
         Ok(s)
     }
 
+    /// Generate an appstream metainfo file.
+    ///
+    /// Load the template metainfo file from `template_path`, and
+    /// generates an internationalized version.
+    ///
+    /// This will also translate any element where the `xdgen-translate` attribute
+    /// contains fluent translation key.
     pub fn expand_metainfo(
         &self,
         template_path: impl AsRef<Path>,
         ctx: &Context,
     ) -> Result<String, Box<dyn Error>> {
-        use xmltree::{Element, XMLNode};
-
         let template_path = template_path.as_ref();
         let template = fs::File::open(template_path)?;
 
@@ -198,8 +224,8 @@ impl App {
          -> Result<(), Box<dyn Error>> {
             let mut index_opt = None;
             for (index, child) in element.children.iter().enumerate() {
-                if let Some(element) = child.as_element() {
-                    if element.name == tag {
+                if let Some(element) = child.as_element()
+                    && element.name == tag {
                         if !element.attributes.is_empty() {
                             return Err(format!(
                                 "template {} has localized tag {}",
@@ -218,7 +244,6 @@ impl App {
                         }
                         index_opt = Some(index);
                     }
-                }
             }
 
             let Some(mut index) = index_opt else {
@@ -264,6 +289,8 @@ impl App {
             }
         }
 
+        expand_all(&mut element, ctx)?;
+
         let mut data = Vec::new();
         element.write_with_config(
             &mut data,
@@ -275,4 +302,38 @@ impl App {
         s = s.replace(" lang=", " xml:lang=");
         Ok(s)
     }
+}
+
+fn expand_all(element: &mut Element, ctx: &Context) -> Result<(), Box<dyn Error>> {
+    let mut to_insert = Vec::new();
+    for (index, child) in element.children.iter_mut().enumerate() {
+        if let Some(element) = child.as_mut_element() {
+            expand_all(element, ctx)?;
+            let Some(xdg_value) = element.attributes.get("xdgen-translate") else {
+                continue;
+            };
+
+            let fluent = FluentString(xdg_value);
+
+            let mut to_insert_for_child = Vec::new();
+            for (lang, value) in fluent.get(ctx) {
+                let mut child = Element::new(&element.name);
+                child
+                    .attributes
+                    .insert("lang".to_string(), lang.to_string().replace("-", "_"));
+                child.children.push(XMLNode::Text(value));
+                to_insert_for_child.push(XMLNode::Element(child));
+            }
+            to_insert.push((index + 1, to_insert_for_child));
+            element.attributes.remove("xdgen-translate");
+        }
+    }
+
+    for (index, to_insert_for_child) in to_insert.into_iter().rev() {
+        for child in to_insert_for_child.into_iter() {
+            element.children.insert(index, child);
+        }
+    }
+
+    Ok(())
 }

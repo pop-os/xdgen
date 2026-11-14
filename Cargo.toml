@@ -4,6 +4,8 @@ description = "Generate localized XDG metadata for an application"
 version = "0.1.0"
 edition = "2024"
 license = "GPL-3.0-only"
+repository = "https://github.com/pop-os/xdgen"
+categories = ["internationalization"]
 
 [dependencies]
 fluent = "0.17"

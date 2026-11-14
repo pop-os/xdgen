@@ -1,0 +1,19 @@
+[Desktop Entry]
+Name=COSMIC Example
+Name[en]=COSMIC Example
+Name[es]=Ejemplo COSMIC
+Name[fr]=Exemple COSMIC
+Comment=Example COSMIC desktop app
+Comment[en]=Example COSMIC desktop app
+Comment[es]=Ejemplo de aplicación COSMIC
+Comment[fr]=Exemple d'application COSMIC
+Exec=cosmic-example
+Terminal=false
+Type=Application
+StartupNotify=true
+Icon=com.system76.CosmicExample
+Categories=COSMIC;System;TerminalEmulator;
+Keywords=Example;Test
+Keywords[en]=Example;Test
+Keywords[es]=Ejemplo;Test
+Keywords[fr]=Exemple;Test

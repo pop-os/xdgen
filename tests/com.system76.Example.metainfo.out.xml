@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.system76.ExampleApp</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-only</project_license>
+  <project_group>COSMIC</project_group>
+  <developer_name>System76</developer_name>
+  <update_contact>email@example.com</update_contact>
+  <url type="homepage">https://github.com/pop-os/cosmic-term</url>
+  <url type="bugtracker">https://github.com/pop-os/cosmic-term</url>
+  <name>COSMIC Example</name>
+  <name xml:lang="en">COSMIC Example</name>
+  <name xml:lang="es">Ejemplo COSMIC</name>
+  <name xml:lang="fr">Exemple COSMIC</name>
+  <summary>Example COSMIC desktop app</summary>
+  <summary xml:lang="en">Example COSMIC desktop app</summary>
+  <summary xml:lang="es">Ejemplo de aplicación COSMIC</summary>
+  <summary xml:lang="fr">Exemple d'application COSMIC</summary>
+  <description>
+    <p>Example app for the COSMIC desktop</p>
+    <p xml:lang="fr">Exemple d'application COSMIC</p>
+    <p xml:lang="es">Ejemplo de aplicación COSMIC</p>
+    <p xml:lang="en">Example app for the COSMIC desktop</p>
+  </description>
+  <releases>
+    <release version="26.09" date="2026-09-27">
+      <description>
+        <ul>
+          <li>Note 1</li>
+          <li xml:lang="fr">Note 1</li>
+          <li xml:lang="es">Nota 1</li>
+          <li xml:lang="en">Note 1</li>
+          <li>Note 2</li>
+          <li xml:lang="fr">Note 2</li>
+          <li xml:lang="es">Nota 2</li>
+          <li xml:lang="en">Note 2</li>
+        </ul>
+      </description>
+    </release>
+  </releases>
+  <keywords>
+    <keyword>Example</keyword>
+    <keyword>Test</keyword>
+    <keyword xml:lang="en">Example</keyword>
+    <keyword xml:lang="en">Test</keyword>
+    <keyword xml:lang="es">Ejemplo</keyword>
+    <keyword xml:lang="es">Test</keyword>
+    <keyword xml:lang="fr">Exemple</keyword>
+    <keyword xml:lang="fr">Test</keyword>
+  </keywords>
+  <launchable type="desktop-id">com.system76.Example.desktop</launchable>
+  <provides>
+    <id>com.system76.Example</id>
+    <binaries>
+      <binary>cosmic-example</binary>
+    </binaries>
+  </provides>
+</component>

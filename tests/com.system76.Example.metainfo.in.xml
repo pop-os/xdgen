@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.system76.ExampleApp</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-only</project_license>
+  <project_group>COSMIC</project_group>
+  <developer_name>System76</developer_name>
+  <update_contact>email@example.com</update_contact>
+  <url type="homepage">https://github.com/pop-os/cosmic-term</url>
+  <url type="bugtracker">https://github.com/pop-os/cosmic-term</url>
+  <name>COSMIC Example</name>
+  <summary>Example COSMIC desktop app</summary>
+  <description>
+    <p xdgen-translate="description">Example app for the COSMIC desktop</p>
+  </description>
+  <releases>
+    <release version="26.09" date="2026-09-27">
+      <description>
+        <ul>
+          <li xdgen-translate="release-note-1">Note 1</li>
+          <li xdgen-translate="release-note-2">Note 2</li>
+        </ul>
+      </description>
+    </release>
+  </releases>
+  <keywords>
+    <keyword>Example</keyword>
+    <keyword>Test</keyword>
+  </keywords>
+  <launchable type="desktop-id">com.system76.Example.desktop</launchable>
+  <provides>
+    <id>com.system76.Example</id>
+    <binaries>
+      <binary>cosmic-example</binary>
+    </binaries>
+  </provides>
+</component>
+
